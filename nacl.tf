@@ -34,10 +34,10 @@ resource "aws_network_acl_rule" "public1_sshiboundaccess" {
   from_port      = 22
   to_port        = 22
 }
-resource "aws_network_acl_rule" "public1_ephemeraldeny" {
+resource "aws_network_acl_rule" "public1_ephemeralinboundaccess" {
   network_acl_id = "${aws_network_acl.public1.id}"
   protocol = "tcp"
-  rule_action = "deny"
+  rule_action = "allow"
   rule_number = 120
   cidr_block = "${var.vpc_cidr}"
   from_port      = 1024
@@ -61,7 +61,7 @@ resource "aws_network_acl_rule" "public1_ephemeraloutboundaccess" {
   protocol = "tcp"
   rule_action = "allow"
   rule_number = 110
-  cidr_block = "${var.vpc_cidr}"
+  cidr_block = "${var.ssh_ip}"
   from_port      = 1024
   to_port        = 65535
   egress = true
@@ -142,7 +142,7 @@ resource "aws_network_acl_rule" "private_sshinboundaccess" {
   network_acl_id = "${aws_network_acl.private3And4.id}"
   protocol = "tcp"
   rule_number = 110
-  cidr_block = "${var.vpc_cidr}"
+  cidr_block = "192.168.0.0/26"
   rule_action = "allow"
   from_port = "22"
   to_port =  "22"
@@ -171,14 +171,14 @@ resource "aws_network_acl_rule" "private_ephemeralinboundaccess" {
 
 #NACl private3&4 Egress Rules
 
-resource "aws_network_acl_rule" "private_sshoutboundaccess" {
+resource "aws_network_acl_rule" "private_httpsoutboundaccess" {
   network_acl_id = "${aws_network_acl.private3And4.id}"
   protocol = "tcp"
   rule_number = 110
   cidr_block = "0.0.0.0/0"
   rule_action = "allow"
-  from_port = "22"
-  to_port =  "22"
+  from_port = "443"
+  to_port =  "443"
   egress = true
 }
 resource "aws_network_acl_rule" "private_icmpoutboundaccess" {
@@ -197,7 +197,7 @@ resource "aws_network_acl_rule" "private_icmpoutboundaccess" {
 resource "aws_network_acl_rule" "private_ephemeraloutboundaccess" {
   network_acl_id = "${aws_network_acl.private3And4.id}"
   protocol = "tcp"
-  rule_action = "deny"
+  rule_action = "allow"
   rule_number = 130
   cidr_block = "0.0.0.0/0"
   from_port   = 1024

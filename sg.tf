@@ -7,6 +7,7 @@ resource "aws_security_group" "bastion" {
   tags {
     Name="bastion-sg"
   }
+  name = "bastion-sg"
 }
 
 #Bastion sg rules
@@ -36,19 +37,20 @@ resource "aws_security_group_rule" "bastiontoworld" {
 }
 
 #sg for ec2 instances in private subnet
-resource "aws_security_group" "ec2" {
+resource "aws_security_group" "appserver" {
 
   vpc_id = "${aws_vpc.usecase1.id}"
   tags {
-    Name="ec2-sg"
+    Name="appserver-sg"
   }
+  name = "appserver-sg"
 }
 
 #sg rules for ec2 instances in private subnet
 resource "aws_security_group_rule" "bastiontoec2" {
 
   protocol = "-1"
-  security_group_id = "${aws_security_group.ec2.id}"
+  security_group_id = "${aws_security_group.appserver.id}"
   from_port = 0
   to_port = 0
   type = "ingress"
@@ -57,13 +59,24 @@ resource "aws_security_group_rule" "bastiontoec2" {
 }
 
 
-resource "aws_security_group_rule" "ec2toworld" {
+resource "aws_security_group_rule" "httpstoworld" {
 
 
-  security_group_id = "${aws_security_group.ec2.id}"
-  from_port   = 0
-  to_port     = 0
-  protocol    = "-1"
+  security_group_id = "${aws_security_group.appserver.id}"
+  from_port   = 443
+  to_port     = 443
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+  type = "egress"
+}
+
+resource "aws_security_group_rule" "icmptoworld" {
+
+
+  security_group_id = "${aws_security_group.appserver.id}"
+  from_port   = -1
+  to_port     = -1
+  protocol    = "icmp"
   cidr_blocks = ["0.0.0.0/0"]
   type = "egress"
 }

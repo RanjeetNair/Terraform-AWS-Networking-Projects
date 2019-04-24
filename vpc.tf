@@ -29,6 +29,7 @@ resource "aws_nat_gateway" "gw" {
   tags = {
     Name = "gw_NAT"
   }
+  depends_on = ["aws_internet_gateway.usecase1_igw"]
 }
 
 
@@ -38,7 +39,7 @@ resource "aws_nat_gateway" "gw" {
 resource "aws_subnet" "private3" {
   cidr_block = "192.168.0.128/26"
   vpc_id = "${aws_vpc.usecase1.id}"
-  availability_zone = "us-east-1a"
+  availability_zone = "${var.az_1}"
   tags {
     Name="private3"
   }
@@ -47,7 +48,7 @@ resource "aws_subnet" "private3" {
 resource "aws_subnet" "private4" {
   cidr_block = "192.168.0.192/26"
   vpc_id = "${aws_vpc.usecase1.id}"
-  availability_zone = "us-east-1b"
+  availability_zone = "${var.az_2}"
   tags {
     Name="private4"
   }
@@ -55,7 +56,7 @@ resource "aws_subnet" "private4" {
 resource "aws_subnet" "public1" {
   cidr_block = "192.168.0.0/26"
   vpc_id = "${aws_vpc.usecase1.id}"
-  availability_zone = "us-east-1a"
+  availability_zone = "${var.az_1}"
   tags {
     Name="public1"
   }
@@ -64,7 +65,7 @@ resource "aws_subnet" "public1" {
 resource "aws_subnet" "public2" {
   cidr_block = "192.168.0.64/26"
   vpc_id = "${aws_vpc.usecase1.id}"
-  availability_zone = "us-east-1b"
+  availability_zone = "${var.az_2}"
   tags {
     Name="public2"
   }
@@ -90,12 +91,7 @@ resource "aws_route_table" "public" {
 
 #routes
 
-/*resource "aws_route" "private_localroute" {
 
-  route_table_id = "${aws_route_table.private.id}"
-  depends_on = ["aws_route_table.private"]
-}
-*/
 resource "aws_route" "public_igw_route" {
 
   route_table_id = "${aws_route_table.public.id}"
@@ -109,6 +105,7 @@ resource "aws_route" "private_nat_route" {
   route_table_id = "${aws_route_table.private.id}"
   gateway_id="${aws_nat_gateway.gw.id}"
   destination_cidr_block="0.0.0.0/0"
+  depends_on = ["aws_route_table.private","aws_nat_gateway.gw"]
 
 }
 
